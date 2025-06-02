@@ -5,6 +5,7 @@
 
     <services>
         <service id="Shopware\Development\Make\Command\MakeAdminModuleCommand" public="true">
+            <argument type="service" id="Shopware\Development\Make\Service\NamespacePickerService"/>
             <tag name="console.command" />
         </service>
     </services>
