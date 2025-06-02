@@ -15,14 +15,18 @@
             <tag name="console.command" />
         </service>
 
+        <service id="Shopware\Development\Make\Command\MakeScheduledTaskCommand"
+                 parent="Shopware\Development\Make\Command\AbstractMakeCommand">
+            <tag name="console.command" />
+        </service>
+
         <service id="Shopware\Development\Make\Command\MakeStorefrontControllerCommand"
                  parent="Shopware\Development\Make\Command\AbstractMakeCommand">
             <tag name="console.command" />
         </service>
 
         <service id="Shopware\Development\Make\Command\MakeStoreApiRouteCommand"
-                 parent="Shopware\Development\Make\Command\AbstractMakeCommand"
-                 public="true">
+                 parent="Shopware\Development\Make\Command\AbstractMakeCommand">
             <tag name="console.command" />
         </service>
     </services>

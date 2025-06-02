@@ -1,10 +1,7 @@
 <?php declare(strict_types=1);
 
-namespace Shopware\Development\Command;
+namespace Shopware\Development\Make\Command;
 
-use Shopware\Development\Make\Command\AbstractMakeCommand;
-use Shopware\Development\Make\Service\BundleFinder;
-use Shopware\Development\Make\Service\NamespacePickerService;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
