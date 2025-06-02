@@ -1,0 +1,7 @@
+{
+  "name": "shopware/development-bundle",
+  "type": "symfony-bundle",
+  "autoload": {
+    "Shopware\\Development\\": "src"
+  }
+}
