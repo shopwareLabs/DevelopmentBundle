@@ -2,6 +2,8 @@
   "name": "shopware/development-bundle",
   "type": "symfony-bundle",
   "autoload": {
-    "Shopware\\Development\\": "src"
+    "psr-4": {
+      "Shopware\\Development\\": "src"
+    }
   }
 }

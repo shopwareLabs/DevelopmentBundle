@@ -1,0 +1,13 @@
+shopware_development:
+    twig:
+        exclude_keywords:
+            - attribute
+            - class
+            - form_action
+            - head_meta_tags
+            - json
+            - page_checkout_additional
+            - sitemap
+            - srcset
+            - title
+            - style
