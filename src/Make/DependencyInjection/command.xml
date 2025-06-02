@@ -9,9 +9,8 @@
             <argument type="service" id="Shopware\Development\Make\Service\NamespacePickerService"/>
         </service>
 
-        <service id="Shopware\Development\Make\Command\MakeAdminModuleCommand" public="true">
-            <argument type="service" id="Shopware\Development\Make\Service\BundleFinder"/>
-            <argument type="service" id="Shopware\Development\Make\Service\NamespacePickerService"/>
+        <service id="Shopware\Development\Make\Command\MakeAdminModuleCommand"
+                 parent="Shopware\Development\Make\Command\AbstractMakeCommand">
             <tag name="console.command" />
         </service>
 
