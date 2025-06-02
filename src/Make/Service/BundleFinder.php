@@ -55,13 +55,13 @@ class BundleFinder
         return $list;
     }
 
-<<<<<<< Updated upstream
     public function getBundleByName(string $name): ?array
     {
         $bundles = $this->getAllBundles();
 
         return $bundles[$name] ?? null;
-=======
+    }
+
     /**
      * Asks the user to select a bundle from the available bundles.
      *
@@ -88,6 +88,5 @@ class BundleFinder
         }
 
         return $bundles[$choosen];
->>>>>>> Stashed changes
     }
 }
