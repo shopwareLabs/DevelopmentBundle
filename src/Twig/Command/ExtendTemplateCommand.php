@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shopware\Development\Twig\Command;
 
 use Shopware\Development\Twig\BlockCollector;
