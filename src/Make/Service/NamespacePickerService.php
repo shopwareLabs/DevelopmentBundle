@@ -6,13 +6,14 @@ namespace Shopware\Development\Make\Service;
 
 use RuntimeException;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Finder\Finder;
 
 class NamespacePickerService
 {
-    public function pickNamespace(SymfonyStyle $io, string $pluginPath): array
+    public function pickNamespace(SymfonyStyle $io, string $pluginPath, string $default = ''): array
     {
-        $serviceNamespace = $io->ask('Please enter the namespace path starting from src (e.g. Service/MyService)', null, function ($answer) {
+        $serviceNamespace = $io->ask('Please enter the namespace path starting from src (e.g. Service/MyService)', $default, function ($answer) {
             if (empty($answer)) {
                 throw new RuntimeException('The namespace path cannot be empty.');
             }
@@ -20,7 +21,7 @@ class NamespacePickerService
             return $answer;
         });
 
-        $bundleNamespace =  $this->detectNamespaceFromMainClass($pluginPath . '/src/');
+        $bundleNamespace =  $this->detectNamespaceFromMainClass($pluginPath);
         if (empty($bundleNamespace)) {
             $io->error('Could not detect the main plugin class.');
             throw new RuntimeException('Main plugin class namespace could not be detected.');
@@ -29,7 +30,7 @@ class NamespacePickerService
         $namespace = $bundleNamespace . '\\' . str_replace('/', '\\', $serviceNamespace);
 
         return [
-            'fullPath' => $pluginPath . '/src/' . $serviceNamespace,
+            'fullPath' => Path::join($pluginPath, $serviceNamespace),
             'namespace' => $namespace,
         ];
     }

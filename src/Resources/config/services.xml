@@ -23,5 +23,12 @@
             <argument>%kernel.project_dir%</argument>
             <argument>%shopware_development.twig.exclude_keywords%</argument>
         </service>
+
+        <service id="Shopware\Development\Command\MakeScheduledTaskCommand">
+            <argument type="service" id="Shopware\Development\Make\Service\BundleFinder"/>
+            <argument type="service" id="Shopware\Development\Make\Service\NamespacePickerService"/>
+            <argument type="service" id="filesystem"/>
+            <tag name="console.command"/>
+        </service>
     </services>
 </container>
