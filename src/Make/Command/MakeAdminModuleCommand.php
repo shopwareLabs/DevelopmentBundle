@@ -21,7 +21,7 @@ class MakeAdminModuleCommand extends AbstractMakeCommand
         $io = new SymfonyStyle($input, $output);
 
         $pluginPath = $this->bundleFinder->askForBundle($io);
-        $moduleConfig = $this->namespacePickerService->pickAdminNamespace($io, $pluginPath);
+        $moduleConfig = $this->namespacePickerService->pickAdminNamespace($io, $pluginPath, 'module/my-module');
 
         $moduleConfig['name'] = $this->moduleName($io);
         $moduleConfig['parent'] = $this->moduleParent($io);
@@ -51,43 +51,18 @@ class MakeAdminModuleCommand extends AbstractMakeCommand
     {
         $modulePath = $moduleConfig['path'];
         $moduleName = $moduleConfig['name'];
-        $moduleParent = $moduleConfig['parent'];
-        $moduleColor = $moduleConfig['color'];
-
-        $this->fileSystem->mkdir($modulePath);
 
         $moduleFileName = $this->convertModuleName($moduleName) . '.js';
         $moduleFilePath = $modulePath . '/' . $moduleFileName;
 
-        $moduleContent = $this->generateModuleContent($moduleName, $moduleParent, $moduleColor);
-
-        $this->fileSystem->dumpFile($moduleFilePath, $moduleContent);
-
-        $io->success(sprintf('Admin module created successfully at: %s', $moduleFilePath));
-        $io->note([
-            'Module details:',
-            sprintf('- Name: %s', $moduleName),
-            sprintf('- Parent: %s', $moduleParent),
-            sprintf('- Color: %s', $moduleColor),
-            sprintf('- File: %s', $moduleFileName),
-        ]);
-    }
-
-    private function generateModuleContent(string $moduleName, string $parent, string $color): string
-    {
-        $moduleId = $this->convertModuleName($moduleName);
-        $templatePath = __DIR__ . '/../Template/admin-module.js';
-
-        $template = file_get_contents($templatePath);
-
-        $replacements = [
-            '{{MODULE_NAME}}' => $moduleName,
-            '{{MODULE_ID}}' => $moduleId,
-            '{{COLOR}}' => $color,
-            '{{PARENT}}' => $parent,
+        $variables = [
+            'MODULE_NAME' => $moduleName,
+            'MODULE_ID' => $this->convertModuleName($moduleName),
+            'PARENT' => $moduleConfig['parent'],
+            'COLOR' => $moduleConfig['color'],
         ];
 
-        return str_replace(array_keys($replacements), array_values($replacements), $template);
+        $this->generateContent($io, 'admin-module.template', $variables, $moduleFileName, $moduleFilePath);
     }
 
     private function convertModuleName(string $input): string

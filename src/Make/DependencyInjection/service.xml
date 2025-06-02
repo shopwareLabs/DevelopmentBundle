@@ -14,5 +14,9 @@
         <service id="Shopware\Development\Make\Service\NamespacePickerService">
             <argument type="service" id="kernel" />
         </service>
+
+        <service id="Shopware\Development\Make\Service\TemplateService">
+            <argument type="service" id="kernel" />
+        </service>
     </services>
 </container>

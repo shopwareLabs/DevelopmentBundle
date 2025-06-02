@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Shopware\Development\Make\Command;
 
+use RuntimeException;
 use Shopware\Development\Make\Service\BundleFinder;
 use Shopware\Development\Make\Service\NamespacePickerService;
+use Shopware\Development\Make\Service\TemplateService;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 
 abstract class AbstractMakeCommand extends Command
@@ -15,9 +18,31 @@ abstract class AbstractMakeCommand extends Command
 
     public function __construct(
         protected readonly BundleFinder $bundleFinder,
-        protected readonly NamespacePickerService $namespacePickerService
+        protected readonly NamespacePickerService $namespacePickerService,
+        protected readonly TemplateService $templateService,
     ) {
         $this->fileSystem = new Filesystem();
         parent::__construct();
+    }
+
+    protected function generateContent(
+        SymfonyStyle $io,
+        string $templateName,
+        array $variables,
+        string $fileName,
+        string $filePath
+    ): void {
+        $template = $this->templateService->generateTemplate($templateName, $variables);
+
+        if (!$this->templateService->createFile($template, $filePath)) {
+            throw new RuntimeException(sprintf('Failed to create file at: %s', $filePath));
+        }
+
+        $io->success(sprintf('File created successfully at: %s', $filePath));
+        $io->text([
+            'Details:',
+            sprintf('- File: %s', $fileName),
+            sprintf("- Content:\n%s", $template),
+        ]);
     }
 }
