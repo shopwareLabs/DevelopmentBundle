@@ -12,6 +12,12 @@ This bundle extends the Shopware 6 core framework to provide development-specifi
 composer require shopware/development-bundle
 ```
 
+Add it to `config/bundles.php`
+
+```php
+DevelopmentBundle::class => ['dev' => true],
+```
+
 ## Structure
 
 ```
