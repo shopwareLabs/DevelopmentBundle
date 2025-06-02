@@ -43,7 +43,7 @@ class MakeScheduledTaskCommand extends AbstractMakeCommand
             'daily'
         );
 
-        $data = $this->namespacePickerService->pickNamespace($io, $bundle['path'], 'ScheduledTask');
+        $data = $this->namespacePickerService->pickNamespace($io, $bundle, 'ScheduledTask');
 
         // Generate the scheduled task
         $this->generateScheduledTask($data, $taskName, $interval, $io);
@@ -55,12 +55,12 @@ class MakeScheduledTaskCommand extends AbstractMakeCommand
     }
 
     /**
-     * @param array{fullPath: string, namespace: string} $bundle
+     * @param array{path: string, namespace: string} $bundle
      */
     private function generateScheduledTask(array $bundle, string $taskName, string $interval, SymfonyStyle $io): void
     {
         $fs = new Filesystem();
-        $scheduledTaskDir = $bundle['fullPath'];
+        $scheduledTaskDir = $bundle['path'];
         if (!$fs->exists($scheduledTaskDir)) {
             $fs->mkdir($scheduledTaskDir);
         }
