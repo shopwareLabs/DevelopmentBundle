@@ -50,4 +50,11 @@ class BundleFinder
 
         return $list;
     }
+
+    public function getBundleByName(string $name): ?array
+    {
+        $bundles = $this->getAllBundles();
+
+        return $bundles[$name] ?? null;
+    }
 }
