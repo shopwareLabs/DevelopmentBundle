@@ -5,31 +5,17 @@ declare(strict_types=1);
 namespace Shopware\Development\Make\Command;
 
 use RuntimeException;
-use Shopware\Development\Make\Service\BundleFinder;
-use Shopware\Development\Make\Service\NamespacePickerService;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Filesystem\Filesystem;
 
 #[AsCommand(
     name: 'dev:make:plugin:admin-module',
     description: 'Generates a Vue admin module for a Shopware plugin'
 )]
-class MakeAdminModuleCommand extends Command
+class MakeAdminModuleCommand extends AbstractMakeCommand
 {
-    private Filesystem $filesystem;
-
-    public function __construct(
-      private readonly BundleFinder           $bundleFinder,
-      private readonly NamespacePickerService $namespacePickerService,
-    ) {
-        parent::__construct();
-        $this->filesystem = new Filesystem();
-    }
-
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
@@ -43,7 +29,7 @@ class MakeAdminModuleCommand extends Command
 
         $this->createAdminModule($moduleConfig, $io);
 
-        return 0;
+        return self::SUCCESS;
     }
 
     private function moduleName(SymfonyStyle $io): string
@@ -68,14 +54,14 @@ class MakeAdminModuleCommand extends Command
         $moduleParent = $moduleConfig['parent'];
         $moduleColor = $moduleConfig['color'];
 
-        $this->filesystem->mkdir($modulePath);
+        $this->fileSystem->mkdir($modulePath);
 
         $moduleFileName = $this->convertModuleName($moduleName) . '.js';
         $moduleFilePath = $modulePath . '/' . $moduleFileName;
 
         $moduleContent = $this->generateModuleContent($moduleName, $moduleParent, $moduleColor);
 
-        $this->filesystem->dumpFile($moduleFilePath, $moduleContent);
+        $this->fileSystem->dumpFile($moduleFilePath, $moduleContent);
 
         $io->success(sprintf('Admin module created successfully at: %s', $moduleFilePath));
         $io->note([
