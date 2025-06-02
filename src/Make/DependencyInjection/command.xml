@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="Shopware\Development\Make\Command\AbstractMakeCommand" abstract="true">
+            <argument type="service" id="Shopware\Development\Make\Service\BundleFinder"/>
+            <argument type="service" id="Shopware\Development\Make\Service\NamespacePickerService"/>
+        </service>
+
+        <service id="Shopware\Development\Make\Command\MakeAdminModuleCommand" public="true">
+            <argument type="service" id="Shopware\Development\Make\Service\BundleFinder"/>
+            <argument type="service" id="Shopware\Development\Make\Service\NamespacePickerService"/>
+            <tag name="console.command" />
+        </service>
+
+        <service id="Shopware\Development\Make\Command\MakeScheduledTaskCommand"
+                 parent="Shopware\Development\Make\Command\AbstractMakeCommand">
+            <tag name="console.command" />
+        </service>
+
+        <service id="Shopware\Development\Make\Command\MakeStorefrontControllerCommand"
+                 parent="Shopware\Development\Make\Command\AbstractMakeCommand">
+            <tag name="console.command" />
+        </service>
+
+        <service id="Shopware\Development\Make\Command\MakeStoreApiRouteCommand"
+                 parent="Shopware\Development\Make\Command\AbstractMakeCommand">
+            <tag name="console.command" />
+        </service>
+
+        <service id="Shopware\Development\Make\Command\MakeJavascriptPluginCommand"
+                 parent="Shopware\Development\Make\Command\AbstractMakeCommand"
+                 public="true">
+            <argument type="service" id="Shopware\Development\Make\Service\JavascriptPluginGeneratorService"/>
+            <argument type="service" id="Shopware\Development\Make\Service\MainJsUpdaterService"/>
+            <tag name="console.command"/>
+        </service>
+
+        <service id="Shopware\Development\Make\Command\MakeEventSubscriberCommand"
+                 parent="Shopware\Development\Make\Command\AbstractMakeCommand">
+            <tag name="console.command" />
+        </service>
+    </services>
+</container>
