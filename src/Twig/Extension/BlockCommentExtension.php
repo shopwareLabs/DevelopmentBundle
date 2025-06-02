@@ -2,6 +2,7 @@
 
 namespace Shopware\Development\Twig\Extension;
 
+use Shopware\Development\Twig\Extension\NodeVisitor\BlockCommentNodeVisitor;
 use Twig\Extension\AbstractExtension;
 
 class BlockCommentExtension extends AbstractExtension
@@ -11,10 +12,10 @@ class BlockCommentExtension extends AbstractExtension
     }
 
     /**
-     * @return BlogCommentNodeVisitor[]
+     * @return BlockCommentNodeVisitor[]
      */
     public function getNodeVisitors(): array
     {
-        return [new BlogCommentNodeVisitor($this->kernelRootDir, $this->twigExcludeKeywords)];
+        return [new BlockCommentNodeVisitor($this->kernelRootDir, $this->twigExcludeKeywords)];
     }
 }
