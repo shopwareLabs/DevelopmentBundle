@@ -51,7 +51,7 @@ class MakeAdminModuleCommand extends AbstractMakeCommand
         $io->title('Shopware Admin Module Generator');
 
         $pluginPath = $this->bundleFinder->askForBundle($io);
-        $moduleConfig = $this->namespacePickerService->pickAdminNamespace($io, $pluginPath, 'module/my-module');
+        $moduleConfig = $this->namespacePickerService->pickAdminJsNamespace($io, $pluginPath);
 
         $moduleConfig['name'] = $this->askForModuleName($io);
         $moduleConfig['parent'] = $this->askForModuleParent($io);
