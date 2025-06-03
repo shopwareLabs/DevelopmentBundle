@@ -6,7 +6,7 @@
 
     <services>
 
-       <service id="{{NAMESPACE}}\{{CLASSNAME}}Subscriber">
+       <service id="{{NAMESPACE}}\{{CLASSNAME}}">
                <tag name="kernel.event_subscriber"/>
            </service>
 
