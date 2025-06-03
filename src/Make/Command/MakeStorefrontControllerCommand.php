@@ -19,15 +19,17 @@ class MakeStorefrontControllerCommand extends AbstractMakeCommand
 {
 
     public const TEMPLATE_DIRECTORY = 'storefront-controller';
+
     public const TEMPLATES = [
         self::TEMPLATE_DIRECTORY => [
             'class' => 'class.template',
             'services' => 'services-xml.template',
-            'routes' => 'routes-xml.template'
+            'routes' => 'routes-xml.template',
+            'twig' => 'twig.template'
         ]
-        ];
-    public const CONTROLLER_METHODS = ['GET', 'POST', 'PUT', 'DELETE'];
+    ];
 
+    public const CONTROLLER_METHODS = ['GET', 'POST', 'PUT', 'DELETE'];
 
     protected function configure(): void
     {
@@ -44,7 +46,6 @@ class MakeStorefrontControllerCommand extends AbstractMakeCommand
 
         $fileName = $variables['CLASSNAME'] . '.php';
         $filePath = $variables['FILEPATH'] . '/' .  $fileName;
-
         $this->generateContent($io, $this->getTemplateName('class'), $variables, $filePath);
 
         $fileName = 'services.xml';
@@ -54,6 +55,10 @@ class MakeStorefrontControllerCommand extends AbstractMakeCommand
         $fileName = 'routes.xml';
         $filePath = $variables['BUNDLEPATH']  . '/Resources/config/' .   $fileName;
         $this->generateContent($io, $this->getTemplateName('routes'), $variables, $filePath);
+
+        $twigTemplateName = $variables['TWIGTEMPLATE'];
+        $filePath = $variables['BUNDLEPATH']  . '/Resources/views/' .   $twigTemplateName;
+        $this->generateContent($io, $this->getTemplateName('twig'), $variables, $filePath);
 
         return Command::SUCCESS;
     }

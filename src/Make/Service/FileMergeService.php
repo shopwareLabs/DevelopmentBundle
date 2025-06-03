@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Shopware\Development\Make\Service;
 
-use RuntimeException;
-
 class FileMergeService
 {
 
@@ -61,5 +59,4 @@ class FileMergeService
 
         return $mergedDom->saveXML();
     }
-
 }
