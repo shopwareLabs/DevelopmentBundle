@@ -59,4 +59,15 @@ class FileMergeService
 
         return $mergedDom->saveXML();
     }
+
+    public function mergeMainJS($originalJs, $newJs): string
+    {
+        $originalLines = explode("\n", $originalJs);
+        $newLines = explode("\n", $newJs);
+
+        $mergedLines = array_merge($originalLines, $newLines);
+        $uniqueLines = array_unique($mergedLines);
+
+        return implode("\n", $uniqueLines);
+    }
 }

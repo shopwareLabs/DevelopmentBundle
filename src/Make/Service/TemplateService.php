@@ -56,6 +56,8 @@ class TemplateService
         $mergedContent = '';
         if (str_ends_with($filePath, 'services.xml')) {
             $mergedContent = $this->fileMergeService->mergeServicesXml($content, $template);
+        } else if (str_ends_with($filePath, 'main.js')) {
+            $mergedContent = $this->fileMergeService->mergeMainJS($content, $template);
         }
 
         if ($mergedContent !== '') {
