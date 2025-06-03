@@ -1,0 +1,8 @@
+{% sw_extends '@Storefront/storefront/page/content/index.html.twig' %}
+
+{% block base_main_inner %}
+    {{ parent() }}
+
+    <template data-{{selector}}></template>
+{% endblock %}
+
