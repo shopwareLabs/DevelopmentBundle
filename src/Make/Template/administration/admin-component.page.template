@@ -1,0 +1,33 @@
+import template from './template.html.twig';
+
+const { Component } = Shopware;
+
+export default Component.register('{{COMPONENT_ID}}', {
+    template,
+
+    data() {
+        return {
+            isLoading: false,
+            entity: null,
+            editMode: false,
+        };
+    },
+
+    metaInfo() {
+        return {
+            title: this.$createTitle(),
+        };
+    },
+
+    computed: {
+
+    },
+
+    created() {
+
+    },
+
+    methods: {
+
+    }
+});

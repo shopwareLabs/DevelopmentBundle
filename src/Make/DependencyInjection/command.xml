@@ -10,6 +10,11 @@
             <argument type="service" id="Shopware\Development\Make\Service\TemplateService"/>
         </service>
 
+        <service id="Shopware\Development\Make\Command\MakeAdminComponentCommand"
+                 parent="Shopware\Development\Make\Command\AbstractMakeCommand">
+            <tag name="console.command" />
+        </service>
+
         <service id="Shopware\Development\Make\Command\MakeAdminModuleCommand"
                  parent="Shopware\Development\Make\Command\AbstractMakeCommand">
             <tag name="console.command" />

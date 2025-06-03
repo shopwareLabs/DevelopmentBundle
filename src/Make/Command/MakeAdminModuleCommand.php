@@ -17,8 +17,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class MakeAdminModuleCommand extends AbstractMakeCommand
 {
     private const DEFAULT_MODULE_NAME = 'MyCustomModule';
-    private const DEFAULT_COLOR = '#189EFF';
     private const MAX_MODULE_NAME_LENGTH = 50;
+    private const DEFAULT_COLOR = '#189EFF';
     private const CUSTOM_COLOR_OPTION = 'Custom color (enter hex code)';
 
     private const AVAILABLE_PARENTS = [
@@ -216,7 +216,7 @@ class MakeAdminModuleCommand extends AbstractMakeCommand
             'COLOR' => $moduleConfig['color'],
         ];
 
-        $this->generateContent($io, 'admin-module.template', $variables, $moduleFilePath);
+        $this->generateContent($io, 'administration/admin-module.template', $variables, $moduleFilePath);
     }
 
     private function convertModuleName(string $input): string
