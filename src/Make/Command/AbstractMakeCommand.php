@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shopware\Development\Make\Command;
 
 use RuntimeException;
-use Shopware\Development\Make\Service\BundleFinder;
+use Shopware\Development\Make\Service\BundleFinderService;
 use Shopware\Development\Make\Service\NamespacePickerService;
 use Shopware\Development\Make\Service\TemplateService;
 use Symfony\Component\Console\Command\Command;
@@ -17,9 +17,9 @@ abstract class AbstractMakeCommand extends Command
     protected Filesystem $fileSystem;
 
     public function __construct(
-        protected readonly BundleFinder $bundleFinder,
+        protected readonly BundleFinderService    $bundleFinder,
         protected readonly NamespacePickerService $namespacePickerService,
-        protected readonly TemplateService $templateService,
+        protected readonly TemplateService        $templateService,
     ) {
         $this->fileSystem = new Filesystem();
         parent::__construct();

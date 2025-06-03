@@ -3,7 +3,7 @@
 namespace Shopware\Development\Make\Command;
 
 use RuntimeException;
-use Shopware\Development\Make\Service\BundleFinder;
+use Shopware\Development\Make\Service\BundleFinderService;
 use Shopware\Development\Make\Service\JavascriptPluginGeneratorService;
 use Shopware\Development\Make\Service\MainJsUpdaterService;
 use Shopware\Development\Make\Service\NamespacePickerService;

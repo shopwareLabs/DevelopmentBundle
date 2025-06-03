@@ -5,7 +5,7 @@ namespace Shopware\Development\Make\Service;
 use Shopware\Core\Kernel;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class BundleFinder
+class BundleFinderService
 {
     private const BUILTIN_BUNDLES = [
         'Framework',

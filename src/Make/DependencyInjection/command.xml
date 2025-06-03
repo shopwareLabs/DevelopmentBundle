@@ -5,7 +5,7 @@
 
     <services>
         <service id="Shopware\Development\Make\Command\AbstractMakeCommand" abstract="true">
-            <argument type="service" id="Shopware\Development\Make\Service\BundleFinder"/>
+            <argument type="service" id="Shopware\Development\Make\Service\BundleFinderService"/>
             <argument type="service" id="Shopware\Development\Make\Service\NamespacePickerService"/>
             <argument type="service" id="Shopware\Development\Make\Service\TemplateService"/>
         </service>
