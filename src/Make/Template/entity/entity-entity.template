@@ -1,0 +1,13 @@
+<?php
+
+namespace {{NAMESPACE}};
+
+use Shopware\Core\Framework\DataAbstractionLayer\EntityIdTrait;
+use Shopware\Core\Framework\DataAbstractionLayer\Entity;
+
+class {{ENTITY_NAME}}Entity extends Entity
+{
+    use EntityIdTrait;
+
+    // Add entity fields and getters/setters
+}

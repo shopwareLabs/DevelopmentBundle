@@ -1,0 +1,33 @@
+<?php
+
+namespace {{NAMESPACE}};
+
+use Shopware\Core\Framework\DataAbstractionLayer\EntityDefinition;
+use Shopware\Core\Framework\DataAbstractionLayer\Field\IdField;
+use Shopware\Core\Framework\DataAbstractionLayer\FieldCollection;
+
+class {{ENTITY_NAME}}Definition extends EntityDefinition
+{
+    public function getEntityName(): string
+    {
+        return '{{ENTITY_TABLE}}';
+    }
+
+    public function getEntityClass(): string
+    {
+        return {{ENTITY_NAME}}Entity::class;
+    }
+
+    public function getCollectionClass(): string
+    {
+        return {{ENTITY_NAME}}Collection::class;
+    }
+
+    protected function defineFields(): FieldCollection
+    {
+        return new FieldCollection([
+            new IdField('id', 'id'),
+            // Add more fields here
+        ]);
+    }
+}

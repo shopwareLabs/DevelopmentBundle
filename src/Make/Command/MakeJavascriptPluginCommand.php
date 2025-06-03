@@ -19,7 +19,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class MakeJavascriptPluginCommand extends AbstractMakeCommand
 {
     private const MAX_MODULE_NAME_LENGTH = 50;
-
     public function __construct(
         BundleFinderService    $bundleFinder,
         NamespacePickerService $namespacePickerService,
@@ -48,9 +47,13 @@ class MakeJavascriptPluginCommand extends AbstractMakeCommand
             $pluginConfig['selector']
         );
 
-        $this->showFileResults($io, $result);
+        $twigCreated = $this->addSelectorToTwigTemplate($result['paths']['twig'], $pluginConfig['selector']);
 
-        $this->addSelectorToTwigTemplate($result['paths']['twig'], $pluginConfig['selector']);
+        if ($twigCreated) {
+            $result['created'][] = $result['paths']['twig'];
+        }
+
+        $this->showFileResults($io, $result);
 
         $updated = $this->updateMainJs(
             $result['paths']['main_js'],
@@ -75,8 +78,6 @@ class MakeJavascriptPluginCommand extends AbstractMakeCommand
                 return trim($answer);
             }
         );
-
-        $io->success(sprintf('Class name set to: %s', $className));
 
         return $className;
     }
@@ -106,12 +107,6 @@ class MakeJavascriptPluginCommand extends AbstractMakeCommand
     {
         foreach ($result['created'] as $file) {
             $io->success("File created: $file");
-        }
-
-        foreach ($result['paths'] as $type => $path) {
-            if ($type !== 'main_js' && !in_array($path, $result['created'])) {
-                $io->warning("File already exists (skipped): $path");
-            }
         }
     }
 
@@ -188,11 +183,11 @@ class MakeJavascriptPluginCommand extends AbstractMakeCommand
 
             $block = <<<TWIG
 
-{% block base_main_inner %}
-    {{ parent() }}
-    $templateLine
-{% endblock %}
-TWIG;
+            {% block base_main_inner %}
+                {{ parent() }}
+                $templateLine
+            {% endblock %}
+            TWIG;
 
             $content = rtrim($content) . "\n" . $block . "\n";
         }
@@ -208,17 +203,14 @@ TWIG;
         $registerStatement = "PluginManager.register('{$className}', {$className}, '[data-{$selector}]');";
 
         $lines = file_exists($mainJsPath)
-            ? file($mainJsPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES)
+            ? file($mainJsPath, FILE_IGNORE_NEW_LINES)
             : [];
 
         $updated = false;
 
-        // Flags zum Tracking
         $hasImport = false;
         $hasPluginManager = false;
         $hasRegistration = false;
-
-        // Positionen merken
         $lastImportIndex = -1;
         $pluginManagerIndex = -1;
 
@@ -243,21 +235,25 @@ TWIG;
             }
         }
 
-        // Import einfügen
         if (!$hasImport) {
             array_splice($lines, $lastImportIndex + 1, 0, $importStatement);
             $updated = true;
-            $pluginManagerIndex++; // verschiebt sich
+            $lastImportIndex++;
+            $pluginManagerIndex++;
         }
 
-        // PluginManager-Deklaration einfügen
+        if (!isset($lines[$lastImportIndex + 1]) || trim($lines[$lastImportIndex + 1]) !== '') {
+            array_splice($lines, $lastImportIndex + 1, 0, '');
+            $updated = true;
+            $pluginManagerIndex++;
+        }
+
         if (!$hasPluginManager) {
             array_splice($lines, $lastImportIndex + 2, 0, $pluginManagerLine);
             $pluginManagerIndex = $lastImportIndex + 2;
             $updated = true;
         }
 
-        // Registrierung einfügen
         if (!$hasRegistration) {
             $insertIndex = $pluginManagerIndex !== -1 ? $pluginManagerIndex + 1 : count($lines);
             array_splice($lines, $insertIndex, 0, $registerStatement);
@@ -271,7 +267,6 @@ TWIG;
 
         return $updated;
     }
-
 
     private function findLastImportIndex(array $lines): int
     {

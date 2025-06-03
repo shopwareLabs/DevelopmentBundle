@@ -20,6 +20,11 @@
             <tag name="console.command" />
         </service>
 
+        <service id="Shopware\Development\Make\Command\MakeEntityCommand"
+                 parent="Shopware\Development\Make\Command\AbstractMakeCommand">
+            <tag name="console.command" />
+        </service>
+
         <service id="Shopware\Development\Make\Command\MakeScheduledTaskCommand"
                  parent="Shopware\Development\Make\Command\AbstractMakeCommand">
             <tag name="console.command" />
