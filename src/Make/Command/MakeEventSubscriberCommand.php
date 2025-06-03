@@ -23,11 +23,6 @@ class MakeEventSubscriberCommand extends AbstractMakeCommand
         ]
     ];
 
-    protected function configure(): void
-    {
-        $this->setDescription('Generates an event subscriber for a plugin');
-    }
-
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
