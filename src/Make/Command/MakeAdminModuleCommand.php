@@ -16,7 +16,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class MakeAdminModuleCommand extends AbstractMakeCommand
 {
-    private const DEFAULT_MODULE_NAME = 'MyCustomModule';
+    private const DEFAULT_MODULE_NAME = 'my-custom-module';
     private const MAX_MODULE_NAME_LENGTH = 50;
     private const DEFAULT_COLOR = '#189EFF';
     private const CUSTOM_COLOR_OPTION = 'Custom color (enter hex code)';
@@ -67,7 +67,7 @@ class MakeAdminModuleCommand extends AbstractMakeCommand
         $io->section('Module Configuration');
 
         $moduleName = $io->ask(
-            'Please enter the name of the module (e.g. "MyCustomModule"):',
+            sprintf('Please enter the name of the module (e.g. "%s"):', self::DEFAULT_MODULE_NAME),
             self::DEFAULT_MODULE_NAME,
             function ($answer) {
                 $this->validateModuleName($answer);
@@ -147,15 +147,21 @@ class MakeAdminModuleCommand extends AbstractMakeCommand
             throw new RuntimeException('Module name cannot be empty.');
         }
 
-        if (!preg_match('/^[A-Z][a-zA-Z0-9]*$/', $trimmed)) {
+        if (!preg_match('/^[a-z][a-z0-9-]*$/', $trimmed)) {
             throw new RuntimeException(
-                'Module name must start with uppercase letter and contain only alphanumeric characters.'
+                'Module name must start with lowercase letter and contain only lowercase letters, numbers and hyphens.'
+            );
+        }
+
+        if (!str_contains($trimmed, '-')) {
+            throw new RuntimeException(
+                'Module name must contain at least one hyphen (-).'
             );
         }
 
         if (strlen($trimmed) > self::MAX_MODULE_NAME_LENGTH) {
             throw new RuntimeException(
-                sprintf('Module name cannot be longer than %d characters.', self::MAX_MODULE_NAME_LENGTH)
+                sprintf('Module name cannot be longer than %s characters.', self::MAX_MODULE_NAME_LENGTH)
             );
         }
     }
