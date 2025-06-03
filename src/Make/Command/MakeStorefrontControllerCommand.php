@@ -31,11 +31,6 @@ class MakeStorefrontControllerCommand extends AbstractMakeCommand
 
     public const CONTROLLER_METHODS = ['GET', 'POST', 'PUT', 'DELETE'];
 
-    protected function configure(): void
-    {
-        $this->setDescription('Generates a storefront controller for a plugin');
-    }
-
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
