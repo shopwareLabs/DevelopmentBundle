@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace {{ NAMESPACE }};
+namespace {{NAMESPACE}};
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-class {{ CLASSNAME }} implements EventSubscriberInterface
+class {{CLASSNAME}} implements EventSubscriberInterface
 {
     public static function getSubscribedEvents(): array
     {

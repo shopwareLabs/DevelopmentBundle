@@ -69,7 +69,7 @@ class MakeEventSubscriberCommand extends AbstractMakeCommand
         $validatedInput['BUNDLEPATH'] = $pluginPath['path'];
 
         $validatedInput['CLASSNAME'] = $io->ask(
-            'Enter the subscriber class name (e.g., MySubscriber)',
+            'Enter the subscriber class name including the "Subscriber" at the end (e.g., MySubscriber)',
             'MySubscriber',
             fn($answer) => trim($answer) ?: throw new RuntimeException('Class name cannot be empty.')
         );

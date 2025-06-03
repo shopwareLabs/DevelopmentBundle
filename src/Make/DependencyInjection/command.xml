@@ -35,11 +35,10 @@
             <tag name="console.command" />
         </service>
 
-        <service id="Shopware\Development\Make\Command\MakeJavascriptPluginCommand"
-                 parent="Shopware\Development\Make\Command\AbstractMakeCommand"
-                 public="true">
-            <argument type="service" id="Shopware\Development\Make\Service\JavascriptPluginGeneratorService"/>
-            <argument type="service" id="Shopware\Development\Make\Service\MainJsUpdaterService"/>
+        <service id="Shopware\Development\Make\Command\MakeJavascriptPluginCommand" public="true">
+            <argument type="service" id="Shopware\Development\Make\Service\BundleFinderService"/>
+            <argument type="service" id="Shopware\Development\Make\Service\NamespacePickerService"/>
+            <argument type="service" id="Shopware\Development\Make\Service\TemplateService"/>
             <tag name="console.command"/>
         </service>
 
