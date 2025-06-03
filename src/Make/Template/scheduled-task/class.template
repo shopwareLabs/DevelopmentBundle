@@ -1,0 +1,18 @@
+<?php declare(strict_types=1);
+
+namespace $namespace\\ScheduledTask;
+
+use Shopware\\Core\\Framework\\MessageQueue\\ScheduledTask\\ScheduledTask;
+
+class $className extends ScheduledTask
+{
+    public static function getTaskName(): string
+    {
+        return '$taskIdentifier.task';
+    }
+
+    public static function getDefaultInterval(): int
+    {
+        return $intervalConstant;
+    }
+}
