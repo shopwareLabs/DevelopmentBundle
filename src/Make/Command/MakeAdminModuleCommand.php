@@ -216,7 +216,7 @@ class MakeAdminModuleCommand extends AbstractMakeCommand
             'COLOR' => $moduleConfig['color'],
         ];
 
-        $this->generateContent($io, 'admin-module.template', $variables, $moduleFileName, $moduleFilePath);
+        $this->generateContent($io, 'admin-module.template', $variables, $moduleFilePath);
     }
 
     private function convertModuleName(string $input): string
