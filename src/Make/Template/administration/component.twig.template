@@ -1,0 +1,5 @@
+{% block {{COMPONENT_ID_SNAKE}} %}
+<div class="{{COMPONENT_ID}}">
+
+</div>
+{% endblock %}

@@ -155,25 +155,45 @@ class MakeAdminComponentCommand extends AbstractMakeCommand
 
     private function createAdminComponent(SymfonyStyle $io, array $module, array $componentConfig, array $pluginPath): void
     {
-        $path = Path::join(
+        $componentName = $componentConfig['name'];
+        $componentType = $componentConfig['type'];
+
+        // Basis-Pfad für die Komponente
+        $basePath = Path::join(
             $pluginPath['path'],
             $this->namespacePickerService::NAMESPACE_ADMINISTRATION_JS,
             $module['namespace'],
-            $componentConfig['type']
+            $componentType,
+            $componentName
         );
-        $fileName = sprintf('%s.js', $componentConfig['name']);
 
         $variables = [
-            'COMPONENT_ID' => $componentConfig['name'],
+            'COMPONENT_ID' => $componentName,
+            'COMPONENT_ID_SNAKE' => str_replace('-', '_', $componentName),
         ];
 
-        $templateName = match($componentConfig['type']) {
-            'page' => 'administration/admin-component.page.template',
-            'view' => 'administration/admin-component.view.template',
-            default => 'administration/admin-component.component.template',
-        };
+        $jsTemplate = $this->getJsTemplate($componentType);
+        $this->generateContent($io, $jsTemplate, $variables, "{$basePath}/{$componentName}.js");
 
-        $this->generateContent($io, $templateName, $variables, $path . '/' . $fileName);
+        $twigTemplate = $this->getTwigTemplate($componentType);
+        $this->generateContent($io, $twigTemplate, $variables, "{$basePath}/{$componentName}.html.twig");
+    }
+
+    private function getJsTemplate(string $type): string
+    {
+        return match($type) {
+            'page' => 'administration/page.js.template',
+            'view' => 'administration/view.js.template',
+            default => 'administration/component.js.template',
+        };
+    }
+
+    private function getTwigTemplate(string $type): string
+    {
+        return match($type) {
+            'page' => 'administration/page.twig.template',
+            default => 'administration/component.twig.template',
+        };
     }
 }
 

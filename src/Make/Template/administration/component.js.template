@@ -1,4 +1,4 @@
-import template from './template.html.twig';
+import template from './{{COMPONENT_ID}}.html.twig';
 
 const { Component } = Shopware;
 
