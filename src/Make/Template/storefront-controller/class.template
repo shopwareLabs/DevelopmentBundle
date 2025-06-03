@@ -1,0 +1,27 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{NAMESPACE}};
+
+use Shopware\Core\System\SalesChannel\SalesChannelContext;
+use Shopware\Storefront\Controller\StorefrontController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+#[Route(defaults: ['_routeScope' => ['storefront']])]
+class {{CLASSNAME}} extends StorefrontController
+{
+    #[Route(
+        path: '{{ROUTEPATH}}',
+        name: '{{ROUTENAME}}',
+        methods: [{{METHODS}}]
+    )]
+    public function {{FUNCTIONNAME}}(Request $request, SalesChannelContext $context): Response
+    {
+        return $this->renderStorefront('@{{TWIGNAMESPACE}}{{TWIGTEMPLATE}}', [
+            'example' => 'Hello world'
+        ]);
+    }
+}

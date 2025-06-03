@@ -29,10 +29,11 @@ abstract class AbstractMakeCommand extends Command
         SymfonyStyle $io,
         string $templateName,
         array $variables,
-        string $fileName,
         string $filePath
     ): void {
         $template = $this->templateService->generateTemplate($templateName, $variables);
+        $path = explode('/', $filePath);
+        $fileName = $path[count($path) - 1];
 
         if (!$this->templateService->createFile($template, $filePath)) {
             throw new RuntimeException(sprintf('Failed to create file at: %s', $filePath));

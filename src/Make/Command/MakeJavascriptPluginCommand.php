@@ -17,15 +17,17 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'dev:make:plugin:js-plugin',
     description: 'Generates a JS plugin with Twig template'
 )]
-class MakeJavascriptPluginCommand extends Command
+class MakeJavascriptPluginCommand extends AbstractMakeCommand
 {
     public function __construct(
-        private readonly BundleFinder                     $bundleFinder,
-        private readonly NamespacePickerService           $namespacePickerService,
         private readonly JavascriptPluginGeneratorService $pluginGenerator,
         private readonly MainJsUpdaterService             $mainJsUpdater,
     ) {
-        parent::__construct();
+        parent::__construct(
+            $this->bundleFinder,
+            $this->namespacePickerService,
+            $this->templateService
+        );
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

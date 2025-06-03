@@ -76,17 +76,17 @@ class BundleFinder
             throw new \RuntimeException('No custom bundles found.');
         }
 
-        $choosen = $io->choice(
+        $selectedBundle = $io->choice(
             'Select a bundle',
             array_keys($this->getAllBundles()),
             null
         );
 
-        if ($choosen === null) {
+        if ($selectedBundle === null) {
             $io->error('No bundle selected.');
             throw new \RuntimeException('No bundle selected.');
         }
 
-        return $bundles[$choosen];
+        return $bundles[$selectedBundle];
     }
 }

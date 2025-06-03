@@ -7,12 +7,11 @@
         <service id="Shopware\Development\Make\Command\AbstractMakeCommand" abstract="true">
             <argument type="service" id="Shopware\Development\Make\Service\BundleFinder"/>
             <argument type="service" id="Shopware\Development\Make\Service\NamespacePickerService"/>
+            <argument type="service" id="Shopware\Development\Make\Service\TemplateService"/>
         </service>
 
-        <service id="Shopware\Development\Make\Command\MakeAdminModuleCommand" public="true">
-            <argument type="service" id="Shopware\Development\Make\Service\BundleFinder"/>
-            <argument type="service" id="Shopware\Development\Make\Service\NamespacePickerService"/>
-            <argument type="service" id="Shopware\Development\Make\Service\TemplateService"/>
+        <service id="Shopware\Development\Make\Command\MakeAdminModuleCommand"
+                 parent="Shopware\Development\Make\Command\AbstractMakeCommand">
             <tag name="console.command" />
         </service>
 
