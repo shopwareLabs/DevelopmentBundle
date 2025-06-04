@@ -1,6 +1,6 @@
 const { PluginBaseClass } = window;
 
-export default class {{className}} extends Plugin {
+export default class {{className}} extends PluginBaseClass {
     init() {
         console.log('{{className}} initialized');
     }
