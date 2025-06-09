@@ -8,8 +8,8 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Filesystem\Filesystem;
 
 #[AsCommand(
     name: 'dev:make:scheduled-task',
@@ -17,154 +17,177 @@ use Symfony\Component\Filesystem\Filesystem;
 )]
 class MakeScheduledTaskCommand extends AbstractMakeCommand
 {
+    public const TEMPLATE_DIRECTORY = 'scheduled-task';
+
+    public const TEMPLATES = [
+        self::TEMPLATE_DIRECTORY => [
+            'class' => 'class.template',
+            'handler-class' => 'handler-class.template',
+            'services' => 'services-xml.template'
+        ]
+    ];
+    public const INTERVAL_CHOICES = [
+        'minutely',
+        'hourly',
+        'daily',
+        'weekly',
+        'custom',
+    ];
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
 
-        $bundle = $this->bundleFinder->askForBundle($io);
+        $io->title('Make Scheduled Task Command');
 
-        // Ask for task name
-        $taskName = $io->ask(
-            'Enter the scheduled task name (e.g., CleanupOldData)',
-            null,
-            function ($answer) {
-                if (empty($answer)) {
-                    throw new \RuntimeException('Task name cannot be empty.');
-                }
-                if (!preg_match('/^[A-Z][a-zA-Z0-9]*$/', $answer)) {
-                    throw new \RuntimeException('Task name must start with uppercase letter and contain only alphanumeric characters.');
-                }
-                return $answer;
-            }
-        );
+        $variables = $this->validateInput($io);
 
-        // Ask for interval
-        $interval = $io->choice(
-            'Select interval',
-            ['minutely', 'hourly', 'daily', 'weekly'],
-            'daily'
-        );
+        $fileName = $variables['CLASSNAME'] . '.php';
+        $filePath = $variables['FILEPATH'] . '/' .  $fileName;
+        $this->generateContent($io, $this->getTemplateName('class'), $variables, $filePath);
 
-        $data = $this->namespacePickerService->pickNamespace($io, $bundle, 'ScheduledTask');
+        $fileName = $variables['HANDLERCLASSNAME'] . '.php';
+        $filePath = $variables['FILEPATH'] . '/' .  $fileName;
+        $this->generateContent($io, $this->getTemplateName('handler-class'), $variables, $filePath);
 
-        // Generate the scheduled task
-        $this->generateScheduledTask($data, $taskName, $interval, $io);
-
-        $io->success(sprintf('Scheduled task "%s" has been created successfully!', $taskName));
-        $io->note('Don\'t forget to register the task and handler in your services.xml file.');
+        $fileName = 'services.xml';
+        $filePath = $variables['BUNDLEPATH'] . '/Resources/config/' .  $fileName;
+        $this->generateContent($io, $this->getTemplateName('services'), $variables, $filePath);
 
         return Command::SUCCESS;
     }
 
-    /**
-     * @param array{path: string, namespace: string} $bundle
-     */
-    private function generateScheduledTask(array $bundle, string $taskName, string $interval, SymfonyStyle $io): void
+    private function getTemplateName(string $type): string
     {
-        $fs = new Filesystem();
-        $scheduledTaskDir = $bundle['path'];
-        if (!$fs->exists($scheduledTaskDir)) {
-            $fs->mkdir($scheduledTaskDir);
+        return self::TEMPLATE_DIRECTORY . '/' . self::TEMPLATES[self::TEMPLATE_DIRECTORY][$type];
+    }
+
+    private function validateInput(SymfonyStyle $io): array
+    {
+        $validatedInput = [];
+
+        $pluginPath = $this->bundleFinder->askForBundle($io);
+        $nameSpace = $this->namespacePickerService->pickNamespace(
+            $io,
+            $pluginPath,
+            'Storefront/ScheduledTask'
+        );
+
+        $validatedInput['NAMESPACE'] = $nameSpace['namespace'];
+        $validatedInput['TWIGNAMESPACE'] = $nameSpace['name'];
+        $validatedInput['FILEPATH'] = $nameSpace['path'];
+        $validatedInput['BUNDLEPATH'] = $pluginPath['path'];
+
+        $validatedInput['CLASSNAME'] = $io->ask(
+            'Enter the scheduled task name (e.g., CleanupOldDataTask)',
+            'ExampleScheduledTask',
+            function ($answer) {
+                return $this->validatePHPClassName($answer);
+            }
+        );
+
+        $validatedInput['TASKIDENTIFIER'] = $io->ask(
+            'Enter the task identifier (e.g.,example.cleanup_old_data)',
+            'example.cleanup_old_data',
+            function ($answer) {
+                return $this->validateTaskIdentifier($answer);
+            }
+        );
+
+        $question = new ChoiceQuestion('Select interval:',self::INTERVAL_CHOICES, 'daily');
+        $interval = $io->askQuestion($question);
+
+        if($interval === 'custom') {
+            $interval = $io->ask(
+                'Enter the custom interval in seconds (e.g., 3600 for hourly)',
+                '3600',
+                function ($answer) {
+                    if (!is_numeric($answer) || (int)$answer <= 0) {
+                        throw new \RuntimeException('Interval must be a positive number.');
+                    }
+                    return (int)$answer;
+                }
+            );
+        } else {
+            $interval = 'self::' . strtoupper($interval);
         }
 
-        // Generate task class
-        $taskClassName = $taskName . 'Task';
-        $taskFilePath = $scheduledTaskDir . '/' . $taskClassName . '.php';
-        $fs->dumpFile($taskFilePath, $this->generateTaskClass($bundle['namespace'], $taskClassName, $taskName, $interval));
+        $validatedInput['INTERVAL'] = $interval;
 
-        // Generate handler class
-        $handlerClassName = $taskName . 'TaskHandler';
-        $handlerFilePath = $scheduledTaskDir . '/' . $handlerClassName . '.php';
-        $fs->dumpFile($handlerFilePath, $this->generateHandlerClass($bundle['namespace'], $taskClassName, $handlerClassName));
+        $validatedInput['HANDLERCLASSNAME'] = $io->ask(
+            'Enter the scheduled task handler name (e.g., CleanupOldDataTaskHandler)',
+            'ExampleScheduledTaskHandler',
+            function ($answer) {
+                return $this->validatePHPClassName($answer);
+            }
+        );
 
-        $io->note([
-            sprintf('Created task: %s', $taskFilePath),
-            sprintf('Created handler: %s', $handlerFilePath),
-        ]);
-
-        // Show service configuration
-        $io->section('Add the following to your services.xml:');
-        $io->text($this->generateServiceConfiguration($bundle['namespace'], $taskClassName, $handlerClassName));
+        return $validatedInput;
     }
 
-    private function generateTaskClass(string $namespace, string $className, string $taskName, string $interval): string
+    private function validateTaskIdentifier(string $identifier): string
     {
-        $intervalConstant = 'self::' . strtoupper($interval);
-        $taskIdentifier = $this->camelCaseToSnakeCase($taskName);
+        if (empty($identifier)) {
+            throw new \RuntimeException('Task identifier cannot be empty.');
+        }
 
-        return <<<PHP
-<?php declare(strict_types=1);
+        if (!preg_match('/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/', $identifier)) {
+            throw new \RuntimeException(
+                'Invalid task identifier format. It should be lowercase, use only alphanumeric characters and underscores, ' .
+                'with segments separated by dots (e.g., vendor.task_name).'
+            );
+        }
 
-namespace $namespace\\ScheduledTask;
+        $segments = explode('.', $identifier);
+        if (count($segments) < 2) {
+            throw new \RuntimeException(
+                'Task identifier should have at least 2 segments separated by dots (e.g., vendor.task_name).'
+            );
+        }
 
-use Shopware\\Core\\Framework\\MessageQueue\\ScheduledTask\\ScheduledTask;
+        foreach ($segments as $segment) {
+            if (!preg_match('/^[a-z][a-z0-9_]*$/', $segment)) {
+                throw new \RuntimeException(
+                    'Each segment must start with a lowercase letter and contain only ' .
+                    'lowercase letters, numbers, and underscores.'
+                );
+            }
+        }
 
-class $className extends ScheduledTask
-{
-    public static function getTaskName(): string
+        return $identifier;
+    }
+
+    private function validatePHPClassName(string $className): string
     {
-        return '$taskIdentifier.task';
+        if (empty($className)) {
+            throw new \RuntimeException('Class name cannot be empty.');
+        }
+
+        if (!preg_match('/^[a-zA-Z_]/', $className)) {
+            throw new \RuntimeException('Class name must start with a letter or underscore.');
+        }
+
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $className)) {
+            throw new \RuntimeException('Class name can only contain letters, numbers, and underscores.');
+        }
+
+        $reservedKeywords = [
+            'abstract', 'and', 'array', 'as', 'break', 'callable', 'case', 'catch', 'class',
+            'clone', 'const', 'continue', 'declare', 'default', 'die', 'do', 'echo', 'else',
+            'elseif', 'empty', 'enddeclare', 'endfor', 'endforeach', 'endif', 'endswitch',
+            'endwhile', 'eval', 'exit', 'extends', 'final', 'finally', 'fn', 'for', 'foreach',
+            'function', 'global', 'goto', 'if', 'implements', 'include', 'include_once',
+            'instanceof', 'insteadof', 'interface', 'isset', 'list', 'match', 'namespace',
+            'new', 'or', 'print', 'private', 'protected', 'public', 'require', 'require_once',
+            'return', 'static', 'switch', 'throw', 'trait', 'try', 'unset', 'use', 'var',
+            'while', 'xor', 'yield', '__halt_compiler'
+        ];
+
+        if (in_array(strtolower($className), $reservedKeywords)) {
+            throw new \RuntimeException("'$className' is a PHP reserved keyword and cannot be used as a class name.");
+        }
+
+        return $className;
     }
 
-    public static function getDefaultInterval(): int
-    {
-        return $intervalConstant;
-    }
-}
-PHP;
-    }
-
-    private function generateHandlerClass(string $namespace, string $taskClass, string $handlerClass): string
-    {
-        return <<<PHP
-<?php declare(strict_types=1);
-
-namespace $namespace\\ScheduledTask;
-
-use Psr\\Log\\LoggerInterface;
-use Shopware\\Core\\Framework\\DataAbstractionLayer\\EntityRepository;
-use Shopware\\Core\\Framework\\MessageQueue\\ScheduledTask\\ScheduledTaskHandler;
-use Symfony\\Component\\Messenger\\Attribute\\AsMessageHandler;
-
-#[AsMessageHandler(handles: $taskClass::class)]
-class $handlerClass extends ScheduledTaskHandler
-{
-    public function __construct(
-        EntityRepository \$scheduledTaskRepository,
-        private readonly LoggerInterface \$logger
-    ) {
-        parent::__construct(\$scheduledTaskRepository, \$logger);
-    }
-
-    public function run(): void
-    {
-        // TODO: Implement your scheduled task logic here
-        \$this->logger->info('Running scheduled task');
-    }
-}
-PHP;
-    }
-
-    private function generateServiceConfiguration(string $namespace, string $taskClass, string $handlerClass): string
-    {
-        $taskService = $namespace . '\\ScheduledTask\\' . $taskClass;
-        $handlerService = $namespace . '\\ScheduledTask\\' . $handlerClass;
-
-        return <<<XML
-<service id="$taskService">
-    <tag name="shopware.scheduled.task"/>
-</service>
-
-<service id="$handlerService">
-    <argument type="service" id="scheduled_task.repository"/>
-    <argument type="service" id="logger"/>
-    <tag name="messenger.message_handler"/>
-</service>
-XML;
-    }
-
-    private function camelCaseToSnakeCase(string $input): string
-    {
-        return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $input));
-    }
 }

@@ -6,11 +6,11 @@
 
     <services>
 
-        <service id="$taskService">
+        <service id="{{NAMESPACE}}\{{CLASSNAME}}">
             <tag name="shopware.scheduled.task"/>
         </service>
 
-        <service id="$handlerService">
+        <service id="{{NAMESPACE}}\{{HANDLERCLASSNAME}}">
             <argument type="service" id="scheduled_task.repository"/>
             <argument type="service" id="logger"/>
             <tag name="messenger.message_handler"/>
