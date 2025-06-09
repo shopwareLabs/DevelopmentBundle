@@ -79,51 +79,99 @@ class MakeStorefrontControllerCommand extends AbstractMakeCommand
         $validatedInput['FILEPATH'] = $nameSpace['path'];
         $validatedInput['BUNDLEPATH'] = $pluginPath['path'];
 
-        $validatedInput['CLASSNAME'] = $io->ask(
-            'Enter the class name (e.g., MyPluginController)',
-            'MyPluginController',
-            function ($answer) {
-                if (empty($answer)) {
-                    throw new \RuntimeException('Class name cannot be empty.');
-                }
+        $validatedInput['CLASSNAME'] = $this->askPHPClassName($io, 'ExamplePluginController');
+        $validatedInput['ROUTENAME'] = $this->askRouteName($io, 'example.plugin.controller');
+        $validatedInput['ROUTEPATH'] = $this->askRoutePath($io, '/example/plugin/controller/{id}');
+        $validatedInput['METHODS'] = $this->askMethods($io, 0);
+        $validatedInput['TWIGTEMPLATE'] = $this->askTwigStorefrontTemplate($io, '/storefront/page/example/index.html.twig');
 
-                return trim($answer);
-            }
+        $validatedInput['FUNCTIONNAME'] = lcfirst(
+            str_replace(
+                ' ',
+                '',
+                ucwords(
+                    str_replace('.', ' ', $validatedInput['ROUTENAME'])
+                )
+            )
         );
 
-        $validatedInput['ROUTENAME'] = $io->ask(
-            'Enter the route name (e.g., my.plugin.controller.action)',
-            'my.plugin.controller.action',
+        return $validatedInput;
+    }
+
+    public function askPHPClassName(SymfonyStyle $io, $defaultClassName = 'ExampleClass'): string
+    {
+        return $io->ask(
+            'Enter the scheduled task name (e.g., ' . $defaultClassName .')',
+            $defaultClassName,
             function ($answer) {
+                return $this->validatePHPClassName($answer);
+            }
+        );
+    }
+
+    public function askRouteName(SymfonyStyle $io, string $defaultRouteName = 'example.controller.action'): string
+    {
+        return $io->ask(
+            'Enter the route name (e.g., ' . $defaultRouteName . ')',
+            $defaultRouteName,
+            function ($answer) use ($defaultRouteName) {
                 if (empty($answer)) {
                     throw new \RuntimeException('Route name cannot be empty.');
                 }
 
-                return trim($answer);
-            }
-        );
+                if (!preg_match('/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/', $answer)) {
+                    throw new \RuntimeException(
+                        'Invalid route name format. It should be lowercase, use only alphanumeric characters and underscores, ' .
+                        'with segments separated by dots (e.g., ' . $defaultRouteName . ').'
+                    );
+                }
 
-        $validatedInput['ROUTEPATH'] = $io->ask(
-            'Enter the route path (e.g., /my/plugin/controller/action)',
-            '/my/plugin/controller/action',
-            function ($answer) {
-                if (empty($answer)) {
-                    throw new \RuntimeException('Route name cannot be empty.');
+                $segments = explode('.', $answer);
+                if (count($segments) < 2) {
+                    throw new \RuntimeException(
+                        'Route name should have at least 2 segments separated by dots (e.g., ' . $defaultRouteName . ').'
+                    );
+                }
+
+                foreach ($segments as $segment) {
+                    if (!preg_match('/^[a-z][a-z0-9_]*$/', $segment)) {
+                        throw new \RuntimeException(
+                            'Each segment must start with a lowercase letter and contain only ' .
+                            'lowercase letters, numbers, and underscores.'
+                        );
+                    }
                 }
 
                 return trim($answer);
             }
         );
+    }
 
-        $question = new ChoiceQuestion('Select method(s):',self::CONTROLLER_METHODS, 0);
+    public function askRoutePath(SymfonyStyle $io,  string $defaultRoutePath = 'example/controller/action'): string
+    {
+        return $io->ask(
+            'Enter the route path (e.g., ' . $defaultRoutePath . ')',
+            $defaultRoutePath,
+            function ($answer) {
+                return $this->validateRoutePath($answer);
+            }
+        );
+    }
+
+    public function askMethods(SymfonyStyle $io, int $defaultMethod = 0): string
+    {
+        $question = new ChoiceQuestion('Select method(s):',self::CONTROLLER_METHODS, $defaultMethod);
         $question->setMultiselect(true);
         $methods = $io->askQuestion($question);
 
-        $validatedInput['METHODS'] = implode(',', array_map(fn($method) => "'" . $method . "'", $methods));
+        return implode(',', array_map(fn($method) => "'" . $method . "'", $methods));
+    }
 
-        $validatedInput['TWIGTEMPLATE'] = $io->ask(
-            'Enter the Twig template name (e.g., /storefront/page/example.html.twig)',
-            '/storefront/page/example.html.twig',
+    public function askTwigStorefrontTemplate(SymfonyStyle $io, string $defaultTwigTemplate = '/storefront/page/example.html.twig'): string
+    {
+        return $io->ask(
+            'Enter the Twig template name (e.g., ' . $defaultTwigTemplate . ')',
+            $defaultTwigTemplate,
             function ($answer) {
                 if (empty($answer)) {
                     throw new \RuntimeException('template name cannot be empty.');
@@ -139,17 +187,82 @@ class MakeStorefrontControllerCommand extends AbstractMakeCommand
                 return trim($answer);
             }
         );
+    }
 
-        $validatedInput['FUNCTIONNAME'] = lcfirst(
-            str_replace(
-                ' ',
-                '',
-                ucwords(
-                    str_replace('.', ' ', $validatedInput['ROUTENAME'])
-                )
-            )
-        );
+    private function validatePHPClassName(string $className): string
+    {
+        if (empty($className)) {
+            throw new \RuntimeException('Class name cannot be empty.');
+        }
 
-        return $validatedInput;
+        if (!preg_match('/^[a-zA-Z_]/', $className)) {
+            throw new \RuntimeException('Class name must start with a letter or underscore.');
+        }
+
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $className)) {
+            throw new \RuntimeException('Class name can only contain letters, numbers, and underscores.');
+        }
+
+        $reservedKeywords = [
+            'abstract', 'and', 'array', 'as', 'break', 'callable', 'case', 'catch', 'class',
+            'clone', 'const', 'continue', 'declare', 'default', 'die', 'do', 'echo', 'else',
+            'elseif', 'empty', 'enddeclare', 'endfor', 'endforeach', 'endif', 'endswitch',
+            'endwhile', 'eval', 'exit', 'extends', 'final', 'finally', 'fn', 'for', 'foreach',
+            'function', 'global', 'goto', 'if', 'implements', 'include', 'include_once',
+            'instanceof', 'insteadof', 'interface', 'isset', 'list', 'match', 'namespace',
+            'new', 'or', 'print', 'private', 'protected', 'public', 'require', 'require_once',
+            'return', 'static', 'switch', 'throw', 'trait', 'try', 'unset', 'use', 'var',
+            'while', 'xor', 'yield', '__halt_compiler'
+        ];
+
+        if (in_array(strtolower($className), $reservedKeywords)) {
+            throw new \RuntimeException("'$className' is a PHP reserved keyword and cannot be used as a class name.");
+        }
+
+        return $className;
+    }
+
+    private function validateRoutePath(string $routePath): string
+    {
+        if (empty($routePath)) {
+            throw new \RuntimeException('Route path cannot be empty.');
+        }
+
+        if (!str_starts_with($routePath, '/')) {
+            throw new \RuntimeException('Route path must start with a slash (/).');
+        }
+
+        if (str_ends_with($routePath, '/') && strlen($routePath) > 1) {
+            throw new \RuntimeException('Route path should not end with a slash.');
+        }
+
+        if (strpos($routePath, '//') !== false) {
+            throw new \RuntimeException('Route path cannot contain consecutive slashes.');
+        }
+
+        $segments = array_filter(explode('/', $routePath));
+
+        if (empty($segments)) {
+            throw new \RuntimeException('Route path must contain at least one segment after the leading slash.');
+        }
+
+        foreach ($segments as $segment) {
+            if (preg_match('/^\{([a-zA-Z][a-zA-Z0-9]*)\??}$/', $segment)) {
+                continue;
+            }
+
+            if (preg_match('/^[a-z0-9\-]+\{([a-zA-Z][a-zA-Z0-9]*)\??}$/', $segment)) {
+                continue;
+            }
+
+            if (!preg_match('/^[a-z][a-z0-9\-]*$/', $segment)) {
+                throw new \RuntimeException(
+                    'Each segment must start with a lowercase letter and contain only lowercase letters, numbers, and hyphens, ' .
+                    'or be a valid parameter pattern like {id} or prefix-{id}.'
+                );
+            }
+        }
+
+        return $routePath;
     }
 }

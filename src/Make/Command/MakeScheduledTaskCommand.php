@@ -12,7 +12,7 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
-    name: 'dev:make:scheduled-task',
+    name: 'dev:make:plugin:scheduled-task',
     description: 'Creates a new scheduled task for a plugin'
 )]
 class MakeScheduledTaskCommand extends AbstractMakeCommand
@@ -78,23 +78,43 @@ class MakeScheduledTaskCommand extends AbstractMakeCommand
         $validatedInput['FILEPATH'] = $nameSpace['path'];
         $validatedInput['BUNDLEPATH'] = $pluginPath['path'];
 
-        $validatedInput['CLASSNAME'] = $io->ask(
-            'Enter the scheduled task name (e.g., CleanupOldDataTask)',
-            'ExampleScheduledTask',
+        $validatedInput['CLASSNAME'] = $this->askPHPClassName($io, 'ExampleScheduledTask');
+        $validatedInput['TASKIDENTIFIER'] = $this->askIdentifier($io, 'example.scheduled_task');
+        $validatedInput['INTERVAL'] = $this->askInterval($io);
+        $validatedInput['HANDLERCLASSNAME'] = $this->askPHPClassName($io, $validatedInput['CLASSNAME'] . 'Handler');
+
+        return $validatedInput;
+    }
+
+    public function askPHPClassName(SymfonyStyle $io, $defaultClassName = 'ExampleClass'): string
+    {
+        return $io->ask(
+            'Enter the scheduled task name (e.g., ' . $defaultClassName .')',
+            $defaultClassName,
             function ($answer) {
                 return $this->validatePHPClassName($answer);
             }
         );
+    }
 
-        $validatedInput['TASKIDENTIFIER'] = $io->ask(
-            'Enter the task identifier (e.g.,example.cleanup_old_data)',
-            'example.cleanup_old_data',
+    public function askIdentifier(SymfonyStyle $io, $defaultIdentifier = 'example.identifier'): string
+    {
+        return $io->ask(
+            'Enter the task identifier (e.g.,' . $defaultIdentifier . ')',
+            $defaultIdentifier,
             function ($answer) {
                 return $this->validateTaskIdentifier($answer);
             }
         );
+    }
 
-        $question = new ChoiceQuestion('Select interval:',self::INTERVAL_CHOICES, 'daily');
+    public function askInterval(SymfonyStyle $io, $defaultInterval = 'hourly'): string
+    {
+        $question = new ChoiceQuestion(
+            'Select interval:',
+            self::INTERVAL_CHOICES,
+            $defaultInterval
+        );
         $interval = $io->askQuestion($question);
 
         if($interval === 'custom') {
@@ -112,17 +132,7 @@ class MakeScheduledTaskCommand extends AbstractMakeCommand
             $interval = 'self::' . strtoupper($interval);
         }
 
-        $validatedInput['INTERVAL'] = $interval;
-
-        $validatedInput['HANDLERCLASSNAME'] = $io->ask(
-            'Enter the scheduled task handler name (e.g., CleanupOldDataTaskHandler)',
-            'ExampleScheduledTaskHandler',
-            function ($answer) {
-                return $this->validatePHPClassName($answer);
-            }
-        );
-
-        return $validatedInput;
+        return $interval;
     }
 
     private function validateTaskIdentifier(string $identifier): string
