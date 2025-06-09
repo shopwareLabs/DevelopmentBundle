@@ -16,12 +16,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class MakeEventSubscriberCommand extends AbstractMakeCommand
 {
     public const TEMPLATE_DIRECTORY = 'event-subscriber';
-    public const TEMPLATES = [
-        self::TEMPLATE_DIRECTORY => [
-            'class' => 'class.template',
-            'services' => 'services-xml.template'
-        ]
-    ];
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -33,18 +27,13 @@ class MakeEventSubscriberCommand extends AbstractMakeCommand
 
         $fileName = $variables['CLASSNAME'] . '.php';
         $filePath = $variables['FILEPATH'] . '/' . $fileName;
-        $this->generateContent($io, $this->getTemplateName('class'), $variables, $filePath);
+        $this->generateContent($io, $this->getPresetTemplateByName('class'), $variables, $filePath);
 
         $fileName = 'services.xml';
         $filePath = $variables['BUNDLEPATH'] . '/Resources/config/' . $fileName;
-        $this->generateContent($io, $this->getTemplateName('services'), $variables, $filePath);
+        $this->generateContent($io, $this->getPresetTemplateByName('services-xml'), $variables, $filePath);
 
         return Command::SUCCESS;
-    }
-
-    private function getTemplateName(string $type): string
-    {
-        return self::TEMPLATE_DIRECTORY . '/' . self::TEMPLATES[self::TEMPLATE_DIRECTORY][$type];
     }
 
     private function validateInput(SymfonyStyle $io): array

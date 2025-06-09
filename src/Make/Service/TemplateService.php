@@ -9,6 +9,9 @@ use RuntimeException;
 class TemplateService
 {
 
+    public const TEMPLATE_PRESETS_DIRECTORY = __DIR__ . '/../Template/';
+    public const TEMPLATE_PRESETS_FILE_EXTENSION = '.template';
+
     public function __construct(
         private readonly FileMergeService $fileMergeService
     )
@@ -17,7 +20,7 @@ class TemplateService
 
     public function generateTemplate(string $templateName, array $variables): string
     {
-        $templatePath = __DIR__ . '/../Template/' . $templateName;
+        $templatePath = self::TEMPLATE_PRESETS_DIRECTORY . $templateName;
 
         if (!file_exists($templatePath)) {
             throw new RuntimeException(sprintf('Template "%s" not found.', $templateName));
@@ -32,11 +35,36 @@ class TemplateService
         return $content;
     }
 
+    public function getPresetTemplates($directory): array
+    {
+        $templates = [];
+        $templateDir = self::TEMPLATE_PRESETS_DIRECTORY . $directory;
+
+
+        if (!is_dir($templateDir)) {
+            throw new RuntimeException(sprintf('Template directory "%s" does not exist.', $templateDir));
+        }
+
+        $files = scandir($templateDir);
+        foreach ($files as $file) {
+            if (is_file($templateDir . '/' . $file) && str_ends_with($file, self::TEMPLATE_PRESETS_FILE_EXTENSION)) {
+                $templateName = str_replace(self::TEMPLATE_PRESETS_FILE_EXTENSION, '', $file);
+                $templates[$templateName] = $file;
+            }
+        }
+
+        if (empty($templates)) {
+            throw new RuntimeException(sprintf('No templates found in directory "%s".', $templateDir));
+        }
+
+        return $templates;
+    }
+
     public function createFile(string $content, string $targetPath): bool
     {
         $directory = dirname($targetPath);
         if (!is_dir($directory)) {
-            if (!mkdir($directory, 0777, true)) {
+            if (!mkdir($directory, 0755, true)) {
                 throw new RuntimeException(sprintf('Unable to create directory "%s".', $directory));
             }
         }

@@ -20,15 +20,6 @@ class MakeStorefrontControllerCommand extends AbstractMakeCommand
 
     public const TEMPLATE_DIRECTORY = 'storefront-controller';
 
-    public const TEMPLATES = [
-        self::TEMPLATE_DIRECTORY => [
-            'class' => 'class.template',
-            'services' => 'services-xml.template',
-            'routes' => 'routes-xml.template',
-            'twig' => 'twig.template'
-        ]
-    ];
-
     public const CONTROLLER_METHODS = ['GET', 'POST', 'PUT', 'DELETE'];
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -41,26 +32,21 @@ class MakeStorefrontControllerCommand extends AbstractMakeCommand
 
         $fileName = $variables['CLASSNAME'] . '.php';
         $filePath = $variables['FILEPATH'] . '/' .  $fileName;
-        $this->generateContent($io, $this->getTemplateName('class'), $variables, $filePath);
+        $this->generateContent($io, $this->getPresetTemplateByName('class'), $variables, $filePath);
 
         $fileName = 'services.xml';
         $filePath = $variables['BUNDLEPATH'] . '/Resources/config/' .  $fileName;
-        $this->generateContent($io, $this->getTemplateName('services'), $variables, $filePath);
+        $this->generateContent($io, $this->getPresetTemplateByName('services-xml'), $variables, $filePath);
 
         $fileName = 'routes.xml';
         $filePath = $variables['BUNDLEPATH']  . '/Resources/config/' .   $fileName;
-        $this->generateContent($io, $this->getTemplateName('routes'), $variables, $filePath);
+        $this->generateContent($io, $this->getPresetTemplateByName('routes-xml'), $variables, $filePath);
 
         $twigTemplateName = $variables['TWIGTEMPLATE'];
         $filePath = $variables['BUNDLEPATH']  . '/Resources/views/' .   $twigTemplateName;
-        $this->generateContent($io, $this->getTemplateName('twig'), $variables, $filePath);
+        $this->generateContent($io, $this->getPresetTemplateByName('twig'), $variables, $filePath);
 
         return Command::SUCCESS;
-    }
-
-    private function getTemplateName(string $type): string
-    {
-        return self::TEMPLATE_DIRECTORY . '/' . self::TEMPLATES[self::TEMPLATE_DIRECTORY][$type];
     }
 
     private function validateInput(SymfonyStyle $io): array
@@ -187,39 +173,6 @@ class MakeStorefrontControllerCommand extends AbstractMakeCommand
                 return trim($answer);
             }
         );
-    }
-
-    private function validatePHPClassName(string $className): string
-    {
-        if (empty($className)) {
-            throw new \RuntimeException('Class name cannot be empty.');
-        }
-
-        if (!preg_match('/^[a-zA-Z_]/', $className)) {
-            throw new \RuntimeException('Class name must start with a letter or underscore.');
-        }
-
-        if (!preg_match('/^[a-zA-Z0-9_]+$/', $className)) {
-            throw new \RuntimeException('Class name can only contain letters, numbers, and underscores.');
-        }
-
-        $reservedKeywords = [
-            'abstract', 'and', 'array', 'as', 'break', 'callable', 'case', 'catch', 'class',
-            'clone', 'const', 'continue', 'declare', 'default', 'die', 'do', 'echo', 'else',
-            'elseif', 'empty', 'enddeclare', 'endfor', 'endforeach', 'endif', 'endswitch',
-            'endwhile', 'eval', 'exit', 'extends', 'final', 'finally', 'fn', 'for', 'foreach',
-            'function', 'global', 'goto', 'if', 'implements', 'include', 'include_once',
-            'instanceof', 'insteadof', 'interface', 'isset', 'list', 'match', 'namespace',
-            'new', 'or', 'print', 'private', 'protected', 'public', 'require', 'require_once',
-            'return', 'static', 'switch', 'throw', 'trait', 'try', 'unset', 'use', 'var',
-            'while', 'xor', 'yield', '__halt_compiler'
-        ];
-
-        if (in_array(strtolower($className), $reservedKeywords)) {
-            throw new \RuntimeException("'$className' is a PHP reserved keyword and cannot be used as a class name.");
-        }
-
-        return $className;
     }
 
     private function validateRoutePath(string $routePath): string

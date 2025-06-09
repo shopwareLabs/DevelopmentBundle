@@ -23,6 +23,8 @@ abstract class AbstractMakeCommand extends Command
 
     protected Filesystem $fileSystem;
 
+    protected array $presetTemplates = [];
+
     public function __construct(
         protected readonly BundleFinderService    $bundleFinder,
         protected readonly NamespacePickerService $namespacePickerService,
@@ -44,7 +46,6 @@ abstract class AbstractMakeCommand extends Command
 
         if ($this->fileSystem->exists($filePath)) {
             $question = new ChoiceQuestion(sprintf('File already exists (%s). Please choose handling:', $fileName),self::FILE_EXISTS_OPTIONS, 'skip');
-            $question->setMultiselect(false);
             $fileHandling = $io->askQuestion($question);
 
             if ($fileHandling === 'overwrite') {
@@ -58,6 +59,60 @@ abstract class AbstractMakeCommand extends Command
         } else {
             $this->writeFile($template, $filePath, $io, $fileName);
         }
+    }
+    protected function getPresetTemplates(): array
+    {
+        if (empty($this->presetTemplates)) {
+            $this->presetTemplates = $this->templateService->getPresetTemplates(static::TEMPLATE_DIRECTORY);
+        }
+
+        return $this->presetTemplates;
+    }
+
+    protected function getPresetTemplateByName(string $type): string
+    {
+        $templates = $this->getPresetTemplates();
+
+        if (!isset($templates[$type])) {
+            throw new RuntimeException(
+                sprintf('Template "%s" not found in directory "%s".', $type, static::TEMPLATE_DIRECTORY)
+            );
+        }
+
+        return static::TEMPLATE_DIRECTORY . '/' . $templates[$type];
+    }
+
+    protected function validatePHPClassName(string $className): string
+    {
+        if (empty($className)) {
+            throw new \RuntimeException('Class name cannot be empty.');
+        }
+
+        if (!preg_match('/^[a-zA-Z_]/', $className)) {
+            throw new \RuntimeException('Class name must start with a letter or underscore.');
+        }
+
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $className)) {
+            throw new \RuntimeException('Class name can only contain letters, numbers, and underscores.');
+        }
+
+        $reservedKeywords = [
+            'abstract', 'and', 'array', 'as', 'break', 'callable', 'case', 'catch', 'class',
+            'clone', 'const', 'continue', 'declare', 'default', 'die', 'do', 'echo', 'else',
+            'elseif', 'empty', 'enddeclare', 'endfor', 'endforeach', 'endif', 'endswitch',
+            'endwhile', 'eval', 'exit', 'extends', 'final', 'finally', 'fn', 'for', 'foreach',
+            'function', 'global', 'goto', 'if', 'implements', 'include', 'include_once',
+            'instanceof', 'insteadof', 'interface', 'isset', 'list', 'match', 'namespace',
+            'new', 'or', 'print', 'private', 'protected', 'public', 'require', 'require_once',
+            'return', 'static', 'switch', 'throw', 'trait', 'try', 'unset', 'use', 'var',
+            'while', 'xor', 'yield', '__halt_compiler'
+        ];
+
+        if (in_array(strtolower($className), $reservedKeywords)) {
+            throw new \RuntimeException("'$className' is a PHP reserved keyword and cannot be used as a class name.");
+        }
+
+        return $className;
     }
 
     private function writeFile($template, $filePath, $io, $fileName): void
@@ -86,5 +141,4 @@ abstract class AbstractMakeCommand extends Command
             ]);
         }
     }
-
 }
