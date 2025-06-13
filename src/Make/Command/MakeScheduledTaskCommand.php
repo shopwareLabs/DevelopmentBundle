@@ -50,10 +50,6 @@ class MakeScheduledTaskCommand extends AbstractMakeCommand
         return Command::SUCCESS;
     }
 
-    private function getTemplateName(string $type): string
-    {
-        return self::TEMPLATE_DIRECTORY . '/' . self::TEMPLATES[self::TEMPLATE_DIRECTORY][$type];
-    }
 
     private function validateInput(SymfonyStyle $io): array
     {
