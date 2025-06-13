@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shopware\Development\Make\Command;
 
+use Shopware\Core\PlatformRequest;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,6 +22,24 @@ class MakeStorefrontControllerCommand extends AbstractMakeCommand
     public const TEMPLATE_DIRECTORY = 'storefront-controller';
 
     public const CONTROLLER_METHODS = ['GET', 'POST', 'PUT', 'DELETE'];
+
+    public const ADDITIONAL_PARAMETERS = [
+        'options' => self::OPTIONS,
+        'defaults' => self::DEFAULTS,
+    ];
+    public const OPTIONS = [
+        'seo' => ['true','false']
+    ];
+
+    public const DEFAULTS = [
+        'XmlHttpRequest' => ['true','false'],
+        PlatformRequest::ATTRIBUTE_LOGIN_REQUIRED => ['true','false'],
+        PlatformRequest::ATTRIBUTE_LOGIN_REQUIRED_ALLOW_GUEST => ['true','false'],
+        PlatformRequest::ATTRIBUTE_CAPTCHA => ['true','false'],
+        PlatformRequest::ATTRIBUTE_HTTP_CACHE => ['true','false'],
+        PlatformRequest::ATTRIBUTE_NO_STORE => ['true','false'],
+        PlatformRequest::ATTRIBUTE_IS_ALLOWED_IN_MAINTENANCE => ['true','false']
+    ];
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -68,7 +87,11 @@ class MakeStorefrontControllerCommand extends AbstractMakeCommand
         $validatedInput['CLASSNAME'] = $this->askPHPClassName($io, 'ExamplePluginController');
         $validatedInput['ROUTENAME'] = $this->askRouteName($io, 'example.plugin.controller');
         $validatedInput['ROUTEPATH'] = $this->askRoutePath($io, '/example/plugin/controller/{id}');
+
         $validatedInput['METHODS'] = $this->askMethods($io, 0);
+        $validatedInput['OPTIONS'] = $this->askadditionalParameters($io, 'options');
+        $validatedInput['DEFAULTS'] = $this->askadditionalParameters($io, 'defaults');
+
         $validatedInput['TWIGTEMPLATE'] = $this->askTwigStorefrontTemplate($io, '/storefront/page/example/index.html.twig');
 
         $validatedInput['FUNCTIONNAME'] = lcfirst(
@@ -153,6 +176,73 @@ class MakeStorefrontControllerCommand extends AbstractMakeCommand
         return implode(',', array_map(fn($method) => "'" . $method . "'", $methods));
     }
 
+    private function askAdditionalParameters(SymfonyStyle $io, string $type): string
+    {
+        $flattenedParams = '';
+        $parameterPresets = self::ADDITIONAL_PARAMETERS[$type] ?? [];
+
+        if (!empty($parameterPresets)) {
+
+            $addOptionalParams = $io->confirm(
+                'Do you want to add optional Route ' . $type . ' parameters?',
+                false
+            );
+
+            if ($addOptionalParams === true) {
+
+                $io->section('Available ' . $type . ' parameters:');
+
+                foreach ($parameterPresets as $key => $values) {
+                    $io->writeln(sprintf(
+                        '%s: %s',
+                        $key,
+                        implode('|', $values)
+                    ));
+                }
+
+                $selectedParams = [];
+                $choices = array_keys($parameterPresets);
+                $defaultChoice = array_key_first($choices);
+
+                $question = new ChoiceQuestion(
+                    'Select ' . $type . ' to configure',
+                    $choices,
+                    $defaultChoice
+                );
+
+                $question->setMultiselect(true);
+                $selectedKeys = $io->askQuestion($question);
+
+                foreach ($selectedKeys as $key) {
+                    $values = $parameterPresets[$key];
+                    $defaultValue = array_key_first($values);
+
+                    $subQuestion = new ChoiceQuestion(
+                        sprintf('Select value for %s:', $key),
+                        $values,
+                        $defaultValue
+                    );
+
+                    $selectedValue = $io->askQuestion($subQuestion);
+                    $selectedParams[$key] = $selectedValue;
+                }
+
+                if (!empty($selectedParams)) {
+                    $flattenedParams = ', ' . $type . ': [';
+                    $optionStrings = [];
+
+                    foreach ($selectedParams as $key => $value) {
+                        $optionStrings[] = "'" . $key . "' => " . $value;
+                    }
+
+                    $flattenedParams .= implode(', ', $optionStrings) . "]";
+                }
+            }
+        }
+
+        return $flattenedParams;
+    }
+
     public function askTwigStorefrontTemplate(SymfonyStyle $io, string $defaultTwigTemplate = '/storefront/page/example.html.twig'): string
     {
         return $io->ask(
@@ -219,3 +309,8 @@ class MakeStorefrontControllerCommand extends AbstractMakeCommand
         return $routePath;
     }
 }
+
+
+
+
+

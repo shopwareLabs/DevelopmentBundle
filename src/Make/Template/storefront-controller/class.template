@@ -13,11 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route(defaults: ['_routeScope' => ['storefront']])]
 class {{CLASSNAME}} extends StorefrontController
 {
-    #[Route(
-        path: '{{ROUTEPATH}}',
-        name: '{{ROUTENAME}}',
-        methods: [{{METHODS}}]
-    )]
+    #[Route(path: '{{ROUTEPATH}}', name: '{{ROUTENAME}}'{{OPTIONS}}{{DEFAULTS}}, methods: [{{METHODS}}])]
     public function {{FUNCTIONNAME}}(Request $request, SalesChannelContext $context): Response
     {
         return $this->renderStorefront('@{{TWIGNAMESPACE}}{{TWIGTEMPLATE}}', [
