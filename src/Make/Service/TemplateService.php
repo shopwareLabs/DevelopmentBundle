@@ -32,6 +32,14 @@ class TemplateService
             $content = str_replace('{{' . $key . '}}', $value, $content);
         }
 
+        preg_match_all('/\{\{([A-Z0-9_]+)\}\}/', $content, $matches);
+
+        if (!empty($matches[0])) {
+            throw new RuntimeException(
+                sprintf('Not all template markers were replaced. Remaining markers: %s', implode(', ', $matches[0]))
+            );
+        }
+
         return $content;
     }
 
